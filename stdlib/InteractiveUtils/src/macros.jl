@@ -67,14 +67,16 @@ function get_typeof(@nospecialize ex)
 end
 
 """
-Normalize `f(args...) do ... end` calls to `f(do_anonymous_function, args...)`
+Normalize `f(args...) do ... end` calls to `f(do_anonymous_function, args...)`.
+Any other expression is returned unchanged.
 """
 function normalize_do_expr(ex::Expr)
     if Meta.isexpr(ex, :do) && Meta.isexpr(get(ex.args, 1, nothing), :call)
         if length(ex.args) != 2
             return Expr(:call, :error, "ill-formed do call")
         end
-        i = findlast(@nospecialize(a)->(Meta.isexpr(a, :kw) || Meta.isexpr(a, :parameters)), ex.args[1].args)
+        # Like lowering: first positional argument, after the `;` block if there is one
+        i = findlast(@nospecialize(a)->Meta.isexpr(a, :parameters), ex.args[1].args)
         args = copy(ex.args[1].args)
         insert!(args, (isnothing(i) ? 2 : 1+i::Int), ex.args[2])
         return Expr(:call, args...)

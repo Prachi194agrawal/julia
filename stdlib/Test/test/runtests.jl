@@ -1154,6 +1154,9 @@ uninferable_kwtest(x; y=1) = 2x+y
 # Issue #59114
 # @inferred with do expressions
 @test @inferred(map([1,2]) do x x end) == [1, 2]
+@test @inferred(Nothing, findfirst([1, 2]) do x; x > 1; end) == 2
+@test @inferred(mapreduce(+, [1, 2, 3]; init=0) do x; x * 2; end) == 12
+@test @inferred(mapreduce(+, [1, 2, 3], init=0) do x; x * 2; end) == 12
 
 @test_throws ErrorException @testset "$(error())" for i in 1:10
 end
